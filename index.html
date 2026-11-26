@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LunchVote — Group Food Poll Brand Preview</title>
+  
+  <!-- Google Fonts: Option A (Outfit + Plus Jakarta Sans) & Option B (Space Grotesk + DM Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================
+       1. SPICED CITRUS DESIGN TOKENS
+       ========================================= */
+    :root {
+      --color-primary: #FF5722;        /* Zesty Tangerine */
+      --color-primary-hover: #F4511E;
+      --color-primary-tint: #FFE5DC;   /* 15% opacity tint for readable progress bars */
+      --color-secondary: #E53935;      /* Tomato Red (Urgency / Timers) */
+      --color-secondary-tint: #FFEBEE;
+      --color-bg: #FFFBF7;             /* Warm Cream */
+      --color-surface: #FFFFFF;        /* Pure White Cards */
+      --color-text: #1F1A17;           /* Espresso Charcoal */
+      --color-muted: #6E6259;          /* Warm Slate */
+      --color-border: #EFE6DF;
+      --color-success: #2E7D32;        /* Fresh Basil */
+      --color-success-tint: #E8F5E9;
+
+      /* Default Font Pairing: Option A (Friendly & Playful) */
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      --shadow-card: 0 4px 16px rgba(31, 26, 23, 0.05);
+    }
+
+    /* Font Pairing Option B: Bold & Trendy */
+    body.font-trendy {
+      --font-heading: 'Space Grotesk', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      padding-bottom: 4rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, .brand-logo, .percentage-text {
+      font-family: var(--font-heading);
+    }
+
+    /* =========================================
+       2. BRANDING TOOLBAR (FOR TESTING)
+       ========================================= */
+    .brand-toolbar {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: 0.75rem 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-muted);
+      margin-right: 0.25rem;
+    }
+
+    .font-toggle-btn {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .font-toggle-btn.active {
+      background: var(--color-text);
+      color: #FFFFFF;
+      border-color: var(--color-text);
+    }
+
+    .swatch-list {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .swatch:hover {
+      transform: translateY(-1px);
+    }
+
+    .swatch-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* =========================================
+       3. MAIN POLL CONTAINER
+       ========================================= */
+    .app-container {
+      max-width: 580px;
+      margin: 2rem auto 0;
+      padding: 0 1.25rem;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .logo-badge {
+      background: var(--color-primary);
+      color: #FFFFFF;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+    }
+
+    .urgency-pill {
+      background: var(--color-secondary-tint);
+      color: var(--color-secondary);
+      border: 1px solid rgba(229, 57, 53, 0.25);
+      padding: 0.35rem 0.8rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.25); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .poll-meta-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.25rem;
+    }
+
+    .group-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.35rem;
+    }
+
+    .poll-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .participation-bar-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      font-weight: 500;
+    }
+
+    .avatar-stack {
+      display: flex;
+      align-items: center;
+    }
+
+    .avatar-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--color-primary-tint);
+      color: var(--color-primary);
+      border: 2px solid var(--color-surface);
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      margin-left: -7px;
+    }
+
+    .avatar-circle:first-child {
+      margin-left: 0;
+    }
+
+    /* =========================================
+       4. POLL OPTIONS & PROGRESS BARS
+       ========================================= */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .option-card {
+      position: relative;
+      background: var(--color-surface);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.2s ease, transform 0.12s ease;
+      user-select: none;
+    }
+
+    .option-card:hover {
+      border-color: #FFC1AD;
+      transform: translateY(-1px);
+    }
+
+    .option-card.selected {
+      border-color: var(--color-primary);
+    }
+
+    /* 15% opacity tint background fill */
+    .progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      background: var(--color-primary-tint);
+      z-index: 1;
+      transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .option-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .option-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .radio-indicator {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #D5C8BF;
+      background: var(--color-surface);
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: grid;
+      place-items: center;
+      transition: all 0.15s ease;
+    }
+
+    .option-card.selected .radio-indicator {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+    }
+
+    .radio-indicator::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.15s ease;
+    }
+
+    .option-card.selected .radio-indicator::after {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .option-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .option-name {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--color-text);
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: var(--radius-pill);
+    }
+
+    .badge-tag {
+      background: var(--color-bg);
+      color: var(--color-muted);
+      border: 1px solid var(--color-border);
+    }
+
+    .badge-leader {
+      background: var(--color-success-tint);
+      color: var(--color-success);
+    }
+
+    .option-voters {
+      font-size: 0.82rem;
+      color: var(--color-muted);
+    }
+
+    .option-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .percentage-text {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .option-card.selected .percentage-text {
+      color: var(--color-primary);
+    }
+
+    .vote-count-sub {
+      font-size: 0.78rem;
+      color: var(--color-muted);
+      font-weight: 600;
+    }
+
+    /* =========================================
+       5. ADD OPTION FORM
+       ========================================= */
+    .add-option-form {
+      display: flex;
+      gap: 0.6rem;
+      background: var(--color-surface);
+      padding: 0.5rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-card);
+    }
+
+    .add-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.55rem 0.75rem;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--color-text);
+      outline: none;
+    }
+
+    .add-input::placeholder {
+      color: #9E9187;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 9px;
+      padding: 0.6rem 1.1rem;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-hover);
+    }
+
+    /* =========================================
+       6. TOAST NOTIFICATION
+       ========================================= */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--color-text);
+      color: #FFFFFF;
+      padding: 0.65rem 1.2rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      opacity: 0;
+      transition: all 0.25s ease;
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Live Brand Controls Header -->
+  <div class="brand-toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-label">Fonts:</span>
+      <button class="font-toggle-btn active" id="btn-font-a" onclick="setFontPairing('friendly')">
+        A: Outfit + Plus Jakarta
+      </button>
+      <button class="font-toggle-btn" id="btn-font-b" onclick="setFontPairing('trendy')">
+        B: Space Grotesk + DM Sans
+      </button>
+    </div>
+
+    <div class="toolbar-group">
+      <span class="toolbar-label">Palette (Click to copy):</span>
+      <div class="swatch-list">
+        <button class="swatch" onclick="copyHex('#FF5722')">
+          <span class="swatch-dot" style="background: #FF5722;"></span>#FF5722
+        </button>
+        <button class="swatch" onclick="copyHex('#E53935')">
+          <span class="swatch-dot" style="background: #E53935;"></span>#E53935
+        </button>
+        <button class="swatch" onclick="copyHex('#FFFBF7')">
+          <span class="swatch-dot" style="background: #FFFBF7;"></span>#FFFBF7
+        </button>
+        <button class="swatch" onclick="copyHex('#1F1A17')">
+          <span class="swatch-dot" style="background: #1F1A17;"></span>#1F1A17
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Poll UI -->
+  <main class="app-container">
+    <header class="app-header">
+      <div class="brand-logo">
+        <div class="logo-badge">🍜</div>
+        <span>MunchPoll</span>
+      </div>
+      <div class="urgency-pill">
+        <span class="pulse-dot"></span>
+        <span id="timer-display">04:32 left</span>
+      </div>
+    </header>
+
+    <section class="poll-meta-card">
+      <div class="group-tag">CS Study Group • 22 Students</div>
+      <h1 class="poll-title">Where are we eating after the 12 PM lecture?</h1>
+      <div class="participation-bar-wrap">
+        <span id="participation-text">18 of 22 voted</span>
+        <div class="avatar-stack">
+          <div class="avatar-circle">AL</div>
+          <div class="avatar-circle">MK</div>
+          <div class="avatar-circle">TH</div>
+          <div class="avatar-circle">SN</div>
+          <div class="avatar-circle">+14</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dynamic Poll Cards -->
+    <section class="options-list" id="options-list"></section>
+
+    <!-- Add Suggestion Form -->
+    <form class="add-option-form" onsubmit="addOption(event)">
+      <input
+        type="text"
+        id="new-option-input"
+        class="add-input"
+        placeholder="Suggest another spot (e.g., Cơm Tấm, Tacos)..."
+        maxlength="45"
+        required
+      />
+      <button type="submit" class="btn-primary">+ Add</button>
+    </form>
+  </main>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    // Initial Poll Data
+    const groupSize = 22;
+    let userVotedId = 1; // Simulate user already voting for option 1
+
+    let options = [
+      { id: 1, name: "Bánh Mì & Iced Coffee", tag: "Fast & Cheap", votes: 7, voters: ["Minh", "Linh", "Alex", "Sam", "+3"] },
+      { id: 2, name: "Spicy Korean Fried Chicken", tag: "Group Favorite", votes: 6, voters: ["Huy", "Trang", "Jordan", "+3"] },
+      { id: 3, name: "Wood-Fired Margherita Pizza", tag: "Easy to Share", votes: 3, voters: ["Khanh", "Taylor", "Devon"] },
+      { id: 4, name: "Bún Thịt Nướng Bowls", tag: "Fresh & Filling", votes: 2, voters: ["Vy", "Chris"] }
+    ];
+
+    function renderPoll() {
+      const listEl = document.getElementById("options-list");
+      const totalVotes = options.reduce((sum, opt) => sum + opt.votes, 0);
+      const maxVotes = Math.max(...options.map(o => o.votes));
+
+      document.getElementById("participation-text").textContent = `${totalVotes} of ${groupSize} voted`;
+
+      listEl.innerHTML = options.map(opt => {
+        const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+        const isSelected = opt.id === userVotedId;
+        const isLeader = opt.votes === maxVotes && opt.votes > 0;
+
+        return `
+          <div class="option-card ${isSelected ? 'selected' : ''}" onclick="castVote(${opt.id})">
+            <div class="progress-fill" style="width: ${pct}%;"></div>
+            <div class="option-content">
+              <div class="option-left">
+                <div class="radio-indicator"></div>
+                <div>
+                  <div class="option-title-row">
+                    <span class="option-name">${escapeHtml(opt.name)}</span>
+                    ${isLeader ? `<span class="badge badge-leader">Leading</span>` : ''}
+                    ${opt.tag ? `<span class="badge badge-tag">${escapeHtml(opt.tag)}</span>` : ''}
+                  </div>
+                  <div class="option-voters">
+                    ${opt.votes > 0 ? `Voted by ${opt.voters.join(', ')}` : 'No votes yet'}
+                  </div>
+                </div>
+              </div>
+              <div class="option-right">
+                <div class="percentage-text">${pct}%</div>
+                <div class="vote-count-sub">${opt.votes} ${opt.votes === 1 ? 'vote' : 'votes'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function castVote(id) {
+      if (userVotedId === id) return;
+
+      // Remove previous vote
+      if (userVotedId !== null) {
+        const prev = options.find(o => o.id === userVotedId);
+        if (prev && prev.votes > 0) {
+          prev.votes--;
+          prev.voters = prev.voters.filter(v => v !== "You");
+        }
+      }
+
+      // Add new vote
+      const next = options.find(o => o.id === id);
+      if (next) {
+        next.votes++;
+        next.voters.unshift("You");
+        userVotedId = id;
+      }
+
+      renderPoll();
+      showToast(`Voted for ${next.name}`);
+    }
+
+    function addOption(event) {
+      event.preventDefault();
+      const input = document.getElementById("new-option-input");
+      const name = input.value.trim();
+      if (!name) return;
+
+      const newId = Date.now();
+      options.push({
+        id: newId,
+        name: name,
+        tag: "New Idea",
+        votes: 0,
+        voters: []
+      });
+
+      input.value = "";
+      castVote(newId); // Automatically vote for the option you added
+    }
+
+    function setFontPairing(mode) {
+      const btnA = document.getElementById("btn-font-a");
+      const btnB = document.getElementById("btn-font-b");
+
+      if (mode === "trendy") {
+        document.body.classList.add("font-trendy");
+        btnB.classList.add("active");
+        btnA.classList.remove("active");
+      } else {
+        document.body.classList.remove("font-trendy");
+        btnA.classList.add("active");
+        btnB.classList.remove("active");
+      }
+    }
+
+    function copyHex(hex) {
+      navigator.clipboard.writeText(hex);
+      showToast(`Copied ${hex}`);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Live Countdown Simulation
+    let secondsLeft = 272; // 04:32
+    setInterval(() => {
+      if (secondsLeft <= 0) return;
+      secondsLeft--;
+      const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+      const secs = String(secondsLeft % 60).padStart(2, "0");
+      document.getElementById("timer-display").textContent = `${mins}:${secs} left`;
+    }, 1000);
+
+    // Initial render
+    renderPoll();
+  </script>
+</body>
+</html>
